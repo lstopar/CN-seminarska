@@ -59,8 +59,6 @@ def main():
  
         # increase time
         curr_tm += 1
-        
-
 
 if __name__ == "__main__":
     main()
