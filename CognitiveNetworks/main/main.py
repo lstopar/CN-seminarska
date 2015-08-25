@@ -1,13 +1,16 @@
 from users import PeriodicUser, SecondaryUser
 
 PRINT_INTERVAL = 1
-TOTAL_TIME = 100
+DELTA_TIME = 1   # millisecond
+TIME_UNIT = 10.0  # TODO minute
+
+TOTAL_TIME = 100*TIME_UNIT
 
 N_CHANNELS = 1
 channels = [0] * N_CHANNELS
 
-primary_users = [PeriodicUser(0, 5, 2)]
-secondary_users = [SecondaryUser()]
+primary_users = [PeriodicUser(TIME_UNIT, 0, 5*TIME_UNIT, 2*TIME_UNIT)]
+secondary_users = [SecondaryUser(TIME_UNIT)]
 # primary_users = [RandomUser(0, .1)]
             
 
@@ -58,7 +61,10 @@ def main():
             print 'Iteration:', curr_tm, 'channels:', channels
  
         # increase time
-        curr_tm += 1
+        curr_tm += DELTA_TIME
 
 if __name__ == "__main__":
     main()
+    print 'Printing the learned intensities ...'
+    for user in secondary_users:
+        print str(user.Q)
