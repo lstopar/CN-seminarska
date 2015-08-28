@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import random as rand
 import numpy as np
+from math import exp
 
 #================================================================================
 # PRIMARY USERS
@@ -33,6 +34,20 @@ class PeriodicUser(PrimaryUser):
     def update(self, tm):
         self.is_active = (tm - self.START_TIME) % (self.ACTIVE_TM + self.INACTIVE_TM) < self.INACTIVE_TM
         
+class MarkovianUser(PrimaryUser):
+    
+    def __init__(self, time_unit, channel_id, lambda_active, lambda_idle):
+        super(MarkovianUser, self).__init__(time_unit, channel_id)
+        self.ACTIVE_PROB = 1 - exp(-float(lambda_active) / time_unit)
+        self.INACTIVE_PROB = 1 - exp(-float(lambda_idle) / time_unit)
+        self.is_active = True
+        
+    def update(self, tm):
+        if self.is_active:
+            self.is_active = rand.random() >= self.INACTIVE_PROB
+        else:   # idle
+            self.is_active = rand.random() < self.ACTIVE_PROB
+        
 class RandomUser(PrimaryUser):
     
     def __init__(self, channel_id, active_prob):
@@ -60,11 +75,17 @@ class SecondaryUser:
         # the only problematic intensity is zero
         self.Q = np.array([[-1.0,1.0],[1.0,-1.0]])
         # helper variables
+        self.next_sampling_tm = 0
         self.last_update_tm = None
         self.last_change_tm = None
+        self.channel_availability = []
         
     
     def update(self, curr_tm, channels):
+        if curr_tm != self.next_sampling_tm:
+            self.channel_availability.append(self.can_write)
+            return
+        
         can_write = channels[self.curr_channel_id] == 0
         
         #  check if we can update the model
@@ -91,6 +112,8 @@ class SecondaryUser:
         
         self.can_write = can_write
         self.last_update_tm = curr_tm
+        self.channel_availability.append(self.can_write)
+        self.next_sampling_tm += self.sampling_period
     
     def write(self, channels):
         if self.can_write:
