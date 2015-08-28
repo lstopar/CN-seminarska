@@ -51,9 +51,10 @@ class SecondaryUser:
     STATE_PRIM_INACTIVE = 0
     STATE_PRIM_ACTIVE = 1
     
-    def __init__(self, time_unit):
+    def __init__(self, time_unit, sampling_period):
         self.TIME_UNIT = time_unit
         self.curr_channel_id = 0
+        self.sampling_period = sampling_period
         self.jump_counts = [0, 0]
         # it doesn't matter what we initialize the transition rate matrix to
         # the only problematic intensity is zero
